@@ -6,7 +6,8 @@ import React, {
   DOMAttributes,
   HTMLAttributes,
   DetailedHTMLProps,
-  useCallback
+  useCallback,
+  useMemo
 } from 'react';
 import classnames from 'classnames';
 import _ from 'lodash';
@@ -27,9 +28,6 @@ import { Participant } from '../../index-types';
 import { useOrientation, usePrevious } from '../../hooks';
 import { useVideoAspect } from './hooks/useVideoAspectRatio';
 import { Radio } from 'antd';
-
-import './video.scss';
-
 type CustomElement<T> = Partial<T & DOMAttributes<T> & { children: any }>;
 
 declare global {
@@ -42,12 +40,18 @@ declare global {
     }
   }
 }
+
+function maxVideoCellWidth(orientation: string, totalParticipants: number, spotlighted?: boolean[]) {
+  return orientation === 'portrait' ? 'none' : `calc(100vw/${Math.min(totalParticipants, spotlighted ? 2 : 4)})`;
+}
+
 const VideoContainer: React.FunctionComponent<RouteComponentProps> = (props) => {
   const zmClient = useContext(ZoomContext);
   const { mediaStream } = useContext(ZoomMediaContext);
   const shareViewRef = useRef<{ selfShareRef: HTMLCanvasElement | HTMLVideoElement | null }>(null);
   const videoPlayerListRef = useRef<Record<string, VideoPlayer>>({});
   const [isRecieveSharing, setIsRecieveSharing] = useState(false);
+  const [spotlightUsers, setSpotlightUsers] = useState<Participant[]>();
   const [participants, setParticipants] = useState(zmClient.getAllUser());
   const [subscribers, setSubscribers] = useState<number[]>([]);
   const activeVideo = useActiveVideo(zmClient);
@@ -62,7 +66,7 @@ const VideoContainer: React.FunctionComponent<RouteComponentProps> = (props) => 
     { label: '90P', value: VideoQuality.Video_90P }
   ];
   const orientation = useOrientation();
-  const maxVideoCellWidth = orientation === 'portrait' ? 'none' : `calc(100vw/${Math.min(participants.length, 4)})`;
+
   useParticipantsChange(zmClient, (participants) => {
     let pageParticipants: Participant[] = [];
     if (participants.length > 0) {
@@ -80,6 +84,9 @@ const VideoContainer: React.FunctionComponent<RouteComponentProps> = (props) => 
     }
     setParticipants(pageParticipants);
     setSubscribers(pageParticipants.filter((user) => user.bVideoOn).map((u) => u.userId));
+  });
+  useSpotlightVideo(zmClient, mediaStream, (p) => {
+    setSpotlightUsers(p);
   });
   const setVideoPlayerRef = (userId: number, element: VideoPlayer | null) => {
     if (element) {
@@ -110,6 +117,19 @@ const VideoContainer: React.FunctionComponent<RouteComponentProps> = (props) => 
     },
     [videoPlayerListRef, mediaStream]
   );
+  const sortedParticipants = useMemo(() => {
+    if (spotlightUsers?.length) {
+      const splightUserIds = spotlightUsers.map((u) => u.userId);
+      return participants
+        .filter((user) => !splightUserIds.includes(user.userId))
+        .concat(
+          participants
+            .filter((user) => splightUserIds.includes(user.userId))
+            .map((user) => ({ spotlighted: true, ...user }))
+        );
+    }
+    return participants;
+  }, [participants, spotlightUsers]);
 
   return (
     <div className="viewport" style={{ height: 'auto', width: 'auto', minHeight: '100vh' }}>
@@ -122,19 +142,22 @@ const VideoContainer: React.FunctionComponent<RouteComponentProps> = (props) => 
         <video-player-container class="video-container-wrap">
           <AvatarActionContext.Provider value={avatarActionState}>
             <ul className="user-list">
-              {participants.map((user) => {
+              {sortedParticipants.map((user) => {
+                const maxWidth = maxVideoCellWidth(orientation, participants.length, (user as any).spotlighted);
                 return (
                   <div
-                    className="video-cell"
+                    className={classnames('video-cell', { 'video-cell-spotlight': (user as any).spotlighted })}
                     key={user.userId}
                     style={
                       // Bugs in react, aspectRatio doesn't work. https://github.com/facebook/react/issues/21098
                       aspectRatio[`${user.userId}`]
                         ? {
                             aspectRatio: aspectRatio[`${user.userId}`],
-                            maxWidth: maxVideoCellWidth
+                            maxWidth
                           }
-                        : { maxWidth: maxVideoCellWidth }
+                        : {
+                            maxWidth
+                          }
                     }
                   >
                     <p className='fixed-text'>YOUR TEXT HERE</p>
