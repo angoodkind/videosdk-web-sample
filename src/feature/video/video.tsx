@@ -61,6 +61,7 @@ const VideoContainer: React.FunctionComponent<RouteComponentProps> = (props) => 
   const avatarActionState = useAvatarAction(zmClient, visibleParticipants);
   const networkQuality = useNetworkQuality(zmClient);
   return (
+    <div>
     <div className="viewport">
       <ShareView ref={shareViewRef} onRecieveSharingChange={setIsRecieveSharing} />
       <div
@@ -86,6 +87,7 @@ const VideoContainer: React.FunctionComponent<RouteComponentProps> = (props) => 
             }}
           />
         )}
+
         <AvatarActionContext.Provider value={avatarActionState}>
           <ul className="avatar-list">
             {visibleParticipants.map((user, index) => {
@@ -118,6 +120,7 @@ const VideoContainer: React.FunctionComponent<RouteComponentProps> = (props) => 
 
       {totalPage > 1 && <Pagination page={page} totalPage={totalPage} setPage={setPage} inSharing={isRecieveSharing} />}
       <ReportBtn />
+    </div>
     </div>
   );
 };

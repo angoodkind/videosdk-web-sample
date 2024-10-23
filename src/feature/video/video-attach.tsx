@@ -27,6 +27,9 @@ import { Participant } from '../../index-types';
 import { useOrientation, usePrevious } from '../../hooks';
 import { useVideoAspect } from './hooks/useVideoAspectRatio';
 import { Radio } from 'antd';
+
+import './video.scss';
+
 type CustomElement<T> = Partial<T & DOMAttributes<T> & { children: any }>;
 
 declare global {
@@ -134,6 +137,8 @@ const VideoContainer: React.FunctionComponent<RouteComponentProps> = (props) => 
                         : { maxWidth: maxVideoCellWidth }
                     }
                   >
+                    <p className='fixed-text'>YOUR TEXT HERE</p>
+                    {/* <p style={{ zIndex: 1000, position: 'absolute', color: 'white', }}>YOUR TEXT HERE</p> */}
                     {avatarActionState?.avatarActionState[user?.userId]?.videoResolutionAdjust?.toggled && (
                       <div className="change-video-resolution">
                         <Radio.Group

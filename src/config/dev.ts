@@ -1,15 +1,15 @@
 import { getExploreName } from '../utils/platform';
 
 export const devConfig = {
-  sdkKey: '',
-  sdkSecret: '',
-  webEndpoint: 'zoom.us', // zfg use www.zoomgov.com
-  topic: '',
+  sdkKey: 'xzBq82pq4A9A6ZGgye8xFvAhaj0MFOqg7DLH',
+  sdkSecret: 'HueSOmvdKZTW1B7On1hQTKbdct7fS9OV3cOM',
+  webEndpoint: 'zoom.us',
+  topic: 'dev',
   name: `${getExploreName()}-${Math.floor(Math.random() * 1000)}`,
-  password: '',
+  password: '12345',
   signature: '',
   sessionKey: '',
   userIdentity: '',
-  // The user role. 1 to specify host or co-host. 0 to specify participant, Participants can join before the host. The session is started when the first user joins. Be sure to use a number type.
+  // role = 1 to join as host, 0 to join as attendee. The first user must join as host to start the session
   role: 1
 };

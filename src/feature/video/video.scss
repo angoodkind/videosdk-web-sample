@@ -1,3 +1,14 @@
+.fixed-text {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: rgba(0,0,0,0.5); /* Semi-transparent background */
+  color: white; /* Text color */
+  text-align: center;
+  padding: 10px;
+  z-index: 1000; /* Ensures it sits above other elements */
+}
+
 .viewport {
   position: relative;
   padding: 5vh 0 10vh;
